@@ -4,7 +4,7 @@
 steroids.config.name = "Steroids Repro Template"
 
 # -- Initial Location --
-steroids.config.location = "http://localhost/index.html"
+steroids.config.location = "http://localhost/views/app/showstatusbar.html"
 
 # -- Tab Bar --
 # steroids.config.tabBar.enabled = true
