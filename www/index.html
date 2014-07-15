@@ -23,12 +23,28 @@
 </head>
 <body>
   <h2>Steroids Repro Template</h2>
-  <button onclick="exitApp()">Exit app</button>
+  <button onclick="sendEmailAndLogResultCode()">Send an Email And Console Log the Result Code</button><br><br>
+  <button onclick="sendEmailAndJustLog()">Send an Email</button>
 
   <script>
-    function exitApp() {
-      navigator.app.exitApp();
+    function sendEmailAndLogResultCode() {
+      // Add an email address as a string to the empty array below 
+      window.plugins.emailComposer.showEmailComposerWithCallback(callbackFunctionWithResultCode, "testing", "testing", [],null ,null, false);
     }
+
+    function callbackFunctionWithResultCode(response) {
+      console.log(response);
+    }
+
+    function sendEmailAndJustLog() {
+      // Add an email address as a string to the empty array below 
+      window.plugins.emailComposer.showEmailComposerWithCallback(callbackFunction, "testing", "testing", [],null ,null, false);
+    }
+
+    function callbackFunction(response) {
+      console.log("callbackFunction called");
+    }
+
   </script>
 </body>
 </html>
