@@ -12,7 +12,7 @@
   <!--body background-color is set for Android not to show the loading screen forever-->
   <style>
   button {
-    font-size: 30px;
+    font-size: 10px;
     margin: 1em;
   }
   html {
@@ -30,8 +30,35 @@
   <h2>Steroids Repro Template</h2>
 
   <p>100% height html/body should not be scrollable</p>
+
+<button onclick="steroids.navigationBar.show();">Show Nav Bar</button>
+<button onclick="steroids.navigationBar.hide();">Hide Nav Bar</button>
+<button onclick="steroids.statusBar.show();">Show Status Bar</button>
+<button onclick="steroids.statusBar.hide();">Hide Status Bar</button>
+
+  <h2>Sizes:</h2>
+  <div id="sizeContainer">
+  </div>
+
   <script>
-    //steroids.navigationBar.show();
+    setInterval(function(){
+
+      var body = document.body,
+          html = document.documentElement,
+          screenSize = 568,
+          height = Math.max( body.scrollHeight, body.offsetHeight,
+                       html.clientHeight, html.scrollHeight, html.offsetHeight ),
+          diff = body.scrollHeight - screenSize ;
+
+
+
+      var container = document.getElementById("sizeContainer");
+
+      container.innerHTML = "body.scrollHeight: " + body.scrollHeight + " body.offsetHeight: " + body.offsetHeight +
+                            " html.clientHeight: " + html.clientHeight + " html.scrollHeight: " + html.scrollHeight +
+                            " html.offsetHeight: " + html.offsetHeight + " max: " + height + " diff (scrollHeight - 568): " + diff;
+
+    }, 100);
   </script>
 </body>
 </html>
