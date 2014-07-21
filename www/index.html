@@ -19,9 +19,11 @@
     height:100%;
   }
   body {
-    background-color: white;
-    height:100%;
+    background-color: red;
     overflow:hidden;
+
+    height:100%;
+    margin-top: -19px;
   }
   </style>
 
@@ -41,6 +43,8 @@
   </div>
 
   <script>
+
+
     setInterval(function(){
 
       var body = document.body,
@@ -49,8 +53,6 @@
           height = Math.max( body.scrollHeight, body.offsetHeight,
                        html.clientHeight, html.scrollHeight, html.offsetHeight ),
           diff = body.scrollHeight - screenSize ;
-
-
 
       var container = document.getElementById("sizeContainer");
 
