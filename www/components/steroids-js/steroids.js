@@ -1,4 +1,4 @@
-/*! steroids-js - v3.1.9 - 2014-05-06 17:47 */
+/*! steroids-js - v3.5.1 - 2014-08-21 14:05 */
 (function(window){
 var Bridge,
   __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; };
@@ -12,7 +12,7 @@ Bridge = (function() {
 
   Bridge.getBestNativeBridge = function() {
     var bridgeClass, prioritizedList, _i, _len;
-    prioritizedList = [TizenBridge, WebBridge, AndroidBridge, WebsocketBridge];
+    prioritizedList = [FreshAndroidBridge, TizenBridge, WebBridge, AndroidBridge, WebsocketBridge, JSCoreBridge];
     if (this.bestNativeBridge == null) {
       for (_i = 0, _len = prioritizedList.length; _i < _len; _i++) {
         bridgeClass = prioritizedList[_i];
@@ -64,39 +64,45 @@ Bridge = (function() {
       callbacks: {
         recurring: function(parameters) {
           var callback, _i, _len, _ref, _results;
-          _ref = options.recurringCallbacks;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            callback = _ref[_i];
-            if (callback != null) {
-              _results.push(callback.call(_this, parameters, options));
+          if (options.recurringCallbacks != null) {
+            _ref = options.recurringCallbacks;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              callback = _ref[_i];
+              if (callback != null) {
+                _results.push(callback.call(_this, parameters, options));
+              }
             }
+            return _results;
           }
-          return _results;
         },
         success: function(parameters) {
           var callback, _i, _len, _ref, _results;
-          _ref = options.successCallbacks;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            callback = _ref[_i];
-            if (callback != null) {
-              _results.push(callback.call(_this, parameters, options));
+          if (options.successCallbacks != null) {
+            _ref = options.successCallbacks;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              callback = _ref[_i];
+              if (callback != null) {
+                _results.push(callback.call(_this, parameters, options));
+              }
             }
+            return _results;
           }
-          return _results;
         },
         failure: function(parameters) {
           var callback, _i, _len, _ref, _results;
-          _ref = options.failureCallbacks;
-          _results = [];
-          for (_i = 0, _len = _ref.length; _i < _len; _i++) {
-            callback = _ref[_i];
-            if (callback != null) {
-              _results.push(callback.call(_this, parameters, options));
+          if (options.failureCallbacks != null) {
+            _ref = options.failureCallbacks;
+            _results = [];
+            for (_i = 0, _len = _ref.length; _i < _len; _i++) {
+              callback = _ref[_i];
+              if (callback != null) {
+                _results.push(callback.call(_this, parameters, options));
+              }
             }
+            return _results;
           }
-          return _results;
         }
       }
     });
@@ -117,7 +123,15 @@ Bridge = (function() {
     request.parameters["screen"] = window.top.AG_SCREEN_ID;
     request.parameters["layer"] = window.top.AG_LAYER_ID;
     request.parameters["udid"] = window.top.AG_WEBVIEW_UDID;
-    return this.sendMessageToNative(JSON.stringify(request));
+    request = this.parseMessage(request);
+    return this.sendMessageToNative(request);
+  };
+
+  Bridge.prototype.parseMessage = function(message) {
+    if (message == null) {
+      message = {};
+    }
+    return JSON.stringify(message);
   };
 
   Bridge.prototype.storeCallbacks = function(options) {
@@ -159,6 +173,39 @@ Bridge = (function() {
   return Bridge;
 
 })();
+;var FreshAndroidBridge,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+FreshAndroidBridge = (function(_super) {
+  __extends(FreshAndroidBridge, _super);
+
+  function FreshAndroidBridge() {
+    this.message_handler = __bind(this.message_handler, this);
+    FreshAndroidAPIBridge.registerHandler("steroids.nativeBridge.message_handler");
+    return true;
+  }
+
+  FreshAndroidBridge.isUsable = function() {
+    return typeof FreshAndroidAPIBridge !== 'undefined';
+  };
+
+  FreshAndroidBridge.prototype.sendMessageToNative = function(message) {
+    return FreshAndroidAPIBridge.send(message);
+  };
+
+  FreshAndroidBridge.prototype.message_handler = function(msg) {
+    if ((msg != null ? msg.callback : void 0) != null) {
+      if (this.callbacks[msg.callback] != null) {
+        return this.callbacks[msg.callback].call(msg.parameters, msg.parameters);
+      }
+    }
+  };
+
+  return FreshAndroidBridge;
+
+})(Bridge);
 ;var AndroidBridge,
   __hasProp = {}.hasOwnProperty,
   __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
@@ -306,8 +353,10 @@ WebsocketBridge = (function(_super) {
     this.reopen();
   }
 
+  WebsocketBridge.websocketBridgeUsable = false;
+
   WebsocketBridge.isUsable = function() {
-    return true;
+    return WebsocketBridge.websocketBridgeUsable;
   };
 
   WebsocketBridge.prototype.reopen = function() {
@@ -455,6 +504,60 @@ TizenBridge = (function(_super) {
   };
 
   return TizenBridge;
+
+})(Bridge);
+;var JSCoreBridge,
+  __bind = function(fn, me){ return function(){ return fn.apply(me, arguments); }; },
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+JSCoreBridge = (function(_super) {
+  __extends(JSCoreBridge, _super);
+
+  function JSCoreBridge() {
+    this.message_handler = __bind(this.message_handler, this);
+    this.executeInWebThread = __bind(this.executeInWebThread, this);
+    return true;
+  }
+
+  JSCoreBridge.isUsable = function() {
+    return true;
+  };
+
+  JSCoreBridge.prototype.sendMessageToNative = function(message) {
+    var _this = this;
+    if (window.__JSCoreBridgeImpl != null) {
+      return window.__JSCoreBridgeImpl.send(message);
+    } else {
+      return window.steroids.on("jsCoreBridgeUsable", function() {
+        return window.__JSCoreBridgeImpl.send(message);
+      });
+    }
+  };
+
+  JSCoreBridge.prototype.parseMessage = function(message) {
+    if (message == null) {
+      message = {};
+    }
+    return message;
+  };
+
+  JSCoreBridge.prototype.executeInWebThread = function(msg) {
+    if ((msg != null ? msg.callback : void 0) != null) {
+      if (this.callbacks[msg.callback] != null) {
+        return this.callbacks[msg.callback].call(msg.parameters, msg.parameters);
+      }
+    }
+  };
+
+  JSCoreBridge.prototype.message_handler = function(msg) {
+    var _this = this;
+    return setTimeout(function() {
+      return _this.executeInWebThread(msg);
+    }, 1);
+  };
+
+  return JSCoreBridge;
 
 })(Bridge);
 ;var Events;
@@ -606,9 +709,11 @@ EventsSupport = (function() {
       });
     };
     fireEventHandler = function(params) {
-      event = {
-        name: params.name
-      };
+      var key;
+      event = {};
+      for (key in params) {
+        event[key] = params[key];
+      }
       if (params.webview != null) {
         event.webview = new steroids.views.WebView({
           location: params.webview.location,
@@ -1038,7 +1143,7 @@ Modal = (function(_super) {
   }
 
   Modal.prototype.show = function(options, callbacks) {
-    var parameters, view;
+    var allowedRotations, parameters, view;
     if (options == null) {
       options = {};
     }
@@ -1046,6 +1151,13 @@ Modal = (function(_super) {
       callbacks = {};
     }
     view = options.constructor.name === "Object" ? options.view : options;
+    allowedRotations = null;
+    if (options.allowedRotations != null) {
+      allowedRotations = options.allowedRotations.constructor.name === "Array" ? options.allowedRotations : [options.allowedRotations];
+      allowedRotations = allowedRotations.map(function(value) {
+        return Screen.mapDegreesToOrientations(value);
+      });
+    }
     switch (view.constructor.name) {
       case "PreviewFileView":
         return steroids.nativeBridge.nativeCall({
@@ -1064,8 +1176,12 @@ Modal = (function(_super) {
         };
         parameters.keepTransitionHelper = options.keepLoading;
         parameters.disableAnimation = options.disableAnimation;
-        if (options.hidesNavigationBar != null) {
-          parameters.hidesNavigationBar = options.hidesNavigationBar;
+        parameters.waitTransitionEnd = options.waitTransitionEnd;
+        if (allowedRotations != null) {
+          parameters.allowedRotations = allowedRotations;
+        }
+        if (options.navigationBar === true) {
+          parameters.hidesNavigationBar = false;
         } else {
           parameters.hidesNavigationBar = true;
         }
@@ -1095,7 +1211,7 @@ Modal = (function(_super) {
     });
   };
 
-  Modal.prototype.closeAll = function(options, callbacks) {
+  Modal.prototype.hideAll = function(options, callbacks) {
     if (options == null) {
       options = {};
     }
@@ -1192,7 +1308,7 @@ DrawerCollection = (function(_super) {
   };
 
   DrawerCollection.prototype.update = function(options, callbacks) {
-    var parameters;
+    var parameters, validViews;
     if (options == null) {
       options = {};
     }
@@ -1205,21 +1321,38 @@ DrawerCollection = (function(_super) {
       right: {},
       options: {}
     };
+    validViews = true;
     if (options.left != null) {
-      DrawerCollection.applyViewOptions(options.left, parameters.left);
+      if (options.left.id != null) {
+        DrawerCollection.applyViewOptions(options.left, parameters.left);
+      } else {
+        validViews = false;
+        if (callbacks.onFailure != null) {
+          callbacks.onFailure("No identifier provided for the preloaded webview!");
+        }
+      }
     }
     if (options.right != null) {
-      DrawerCollection.applyViewOptions(options.right, parameters.right);
+      if (options.right.id != null) {
+        DrawerCollection.applyViewOptions(options.right, parameters.right);
+      } else {
+        validViews = false;
+        if (callbacks.onFailure != null) {
+          callbacks.onFailure("No identifier provided for the preloaded webview!");
+        }
+      }
     }
     if (options.options != null) {
       DrawerCollection.applyDrawerSettings(options.options, parameters.options);
     }
-    return steroids.nativeBridge.nativeCall({
-      method: "updateDrawer",
-      parameters: parameters,
-      successCallbacks: [callbacks.onSuccess],
-      failureCallbacks: [callbacks.onFailure]
-    });
+    if (validViews) {
+      return steroids.nativeBridge.nativeCall({
+        method: "updateDrawer",
+        parameters: parameters,
+        successCallbacks: [callbacks.onSuccess],
+        failureCallbacks: [callbacks.onFailure]
+      });
+    }
   };
 
   DrawerCollection.prototype.disableGesture = function(options, callbacks) {
@@ -1327,8 +1460,8 @@ DrawerCollection = (function(_super) {
     if (options.closeGestures != null) {
       parameters.closeGestures = options.closeGestures;
     }
-    if (options.strechDrawer != null) {
-      parameters.strechDrawer = options.strechDrawer;
+    if (options.stretchDrawer != null) {
+      parameters.strechDrawer = options.stretchDrawer;
     }
     if (options.centerViewInteractionMode != null) {
       parameters.centerViewInteractionMode = options.centerViewInteractionMode;
@@ -1383,7 +1516,8 @@ LayerCollection = (function(_super) {
     }
     return steroids.nativeBridge.nativeCall({
       method: "popAllLayers",
-      successCallbacks: [callbacks.onSuccess],
+      successCallbacks: [callbacks.onSuccess, callbacks.onTransitionStarted],
+      recurringCallbacks: [callbacks.onTransitionEnd],
       failureCallbacks: [callbacks.onFailure]
     });
   };
@@ -2097,13 +2231,41 @@ TabBar = (function(_super) {
     });
   };
 
+  TabBar.prototype.replace = function(options, callbacks) {
+    var parameters, scale, _i, _ref;
+    if (options == null) {
+      options = {};
+    }
+    if (callbacks == null) {
+      callbacks = {};
+    }
+    steroids.debug("steroids.tabBar.replace options: " + (JSON.stringify(options)) + " callbacks: " + (JSON.stringify(callbacks)));
+    if (options.constructor.name === "Object") {
+      parameters = {};
+      parameters.tabs = [];
+      for (scale = _i = 0, _ref = options.tabs.length; 0 <= _ref ? _i < _ref : _i > _ref; scale = 0 <= _ref ? ++_i : --_i) {
+        parameters.tabs.push({
+          target_url: options.tabs[scale].location,
+          title: options.tabs[scale].title,
+          image_path: options.tabs[scale].icon,
+          position: options.tabs[scale].position
+        });
+      }
+      return steroids.nativeBridge.nativeCall({
+        method: "replaceTabs",
+        parameters: parameters,
+        successCallbacks: [callbacks.onSuccess],
+        failureCallbacks: [callbacks.onFailure]
+      });
+    }
+  };
+
   return TabBar;
 
 })(EventsSupport);
 ;var WebView,
   __hasProp = {}.hasOwnProperty,
-  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; },
-  __indexOf = [].indexOf || function(item) { for (var i = 0, l = this.length; i < l; i++) { if (i in this && this[i] === item) return i; } return -1; };
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
 
 WebView = (function(_super) {
   __extends(WebView, _super);
@@ -2114,12 +2276,9 @@ WebView = (function(_super) {
 
   WebView.prototype.location = null;
 
-  WebView.prototype.allowedRotations = null;
-
   WebView.prototype.navigationBar = new NavigationBar;
 
   function WebView(options) {
-    var allowedRotations, _ref;
     if (options == null) {
       options = {};
     }
@@ -2132,8 +2291,6 @@ WebView = (function(_super) {
       }
     }
     this.params = this.getParams();
-    allowedRotations = (_ref = window.AG_allowedRotationsDefaults) != null ? _ref : [0];
-    this.setAllowedRotations([0]);
   }
 
   WebView.prototype.preload = function(options, callbacks) {
@@ -2228,38 +2385,44 @@ WebView = (function(_super) {
   };
 
   WebView.prototype.setAllowedRotations = function(options, callbacks) {
-    var _ref,
-      _this = this;
+    var allowedRotations;
     if (options == null) {
       options = {};
     }
     if (callbacks == null) {
       callbacks = {};
     }
-    this.allowedRotations = options.constructor.name === "Array" ? options : options.allowedRotations;
-    window.shouldRotateToOrientation = function(orientation) {
-      if (__indexOf.call(_this.allowedRotations, orientation) >= 0) {
-        return true;
-      } else {
-        return false;
-      }
-    };
-    return (_ref = callbacks.onSuccess) != null ? _ref.call() : void 0;
+    allowedRotations = options.constructor.name === "Array" ? options : options.constructor.name === "String" ? [options] : options.allowedRotations;
+    if ((allowedRotations == null) || allowedRotations.length === 0) {
+      allowedRotations = [0];
+    }
+    allowedRotations = allowedRotations.map(function(value) {
+      return Screen.mapDegreesToOrientations(value);
+    });
+    return steroids.nativeBridge.nativeCall({
+      method: "setAllowedOrientation",
+      parameters: {
+        allowedRotations: allowedRotations
+      },
+      successCallbacks: [callbacks.onSuccess],
+      failureCallbacks: [callbacks.onFailure]
+    });
   };
 
   WebView.prototype.rotateTo = function(options, callbacks) {
-    var degrees;
+    var degrees, orientation;
     if (options == null) {
       options = {};
     }
     if (callbacks == null) {
       callbacks = {};
     }
-    degrees = options.constructor.name === "String" ? options : options.degrees;
+    degrees = options.constructor.name === "String" || options.constructor.name === "Number" ? options : options.degrees;
+    orientation = Screen.mapDegreesToOrientations(degrees);
     return steroids.nativeBridge.nativeCall({
-      method: "rotateTo",
+      method: "setOrientation",
       parameters: {
-        orientation: degrees
+        orientation: orientation
       },
       successCallbacks: [callbacks.onSuccess],
       failureCallbacks: [callbacks.onFailure]
@@ -3017,6 +3180,45 @@ Screen = (function() {
     });
   };
 
+  Screen.mapDegreesToOrientations = function(degrees) {
+    if (degrees === 0 || degrees === "0") {
+      return "portrait";
+    } else if (degrees === 180 || degrees === "180") {
+      return "portraitUpsideDown";
+    } else if (degrees === -90 || degrees === "-90") {
+      return "landscapeLeft";
+    } else if (degrees === 90 || degrees === "90") {
+      return "landscapeRight";
+    } else {
+      return degrees;
+    }
+  };
+
+  Screen.prototype.setAllowedRotations = function(options, callbacks) {
+    var allowedRotations;
+    if (options == null) {
+      options = {};
+    }
+    if (callbacks == null) {
+      callbacks = {};
+    }
+    allowedRotations = options.constructor.name === "Array" ? options : options.constructor.name === "String" ? [options] : options.allowedRotations;
+    if ((allowedRotations == null) || allowedRotations.length === 0) {
+      allowedRotations = [0];
+    }
+    allowedRotations = allowedRotations.map(function(value) {
+      return Screen.mapDegreesToOrientations(value);
+    });
+    return steroids.nativeBridge.nativeCall({
+      method: "setAllowedOrientation",
+      parameters: {
+        allowedRotations: allowedRotations
+      },
+      successCallbacks: [callbacks.onSuccess],
+      failureCallbacks: [callbacks.onFailure]
+    });
+  };
+
   Screen.prototype.rotate = function(options, callbacks) {
     var params;
     if (options == null) {
@@ -3027,6 +3229,7 @@ Screen = (function() {
     }
     params = {};
     params.orientation = options.constructor.name === "String" ? options : options.orientation != null ? options.orientation : "portrait";
+    params.orientation = Screen.mapDegreesToOrientations(params.orientation);
     return steroids.nativeBridge.nativeCall({
       method: "setOrientation",
       parameters: params,
@@ -3174,6 +3377,81 @@ Notifications = (function() {
   return Notifications;
 
 })();
+;var InitialView;
+
+InitialView = (function() {
+  function InitialView() {}
+
+  InitialView.prototype.dismiss = function(options, callbacks) {
+    var parameters;
+    if (options == null) {
+      options = {};
+    }
+    if (callbacks == null) {
+      callbacks = {};
+    }
+    console.log("InitialView.dismiss called");
+    parameters = {};
+    if (options.animation != null) {
+      parameters.animation = options.animation;
+    } else {
+      parameters.animation = new steroids.Animation({
+        transition: "fade"
+      });
+    }
+    return steroids.nativeBridge.nativeCall({
+      method: "dismissInitialView",
+      parameters: parameters,
+      successCallbacks: [callbacks.onSuccess],
+      failureCallbacks: [callbacks.onFailure]
+    });
+  };
+
+  InitialView.prototype.show = function(options, callbacks) {
+    var parameters;
+    if (options == null) {
+      options = {};
+    }
+    if (callbacks == null) {
+      callbacks = {};
+    }
+    console.log("InitialView.show called");
+    parameters = {};
+    if (options.animation != null) {
+      parameters.animation = options.animation;
+    } else {
+      parameters.animation = new steroids.Animation({
+        transition: "fade"
+      });
+    }
+    return steroids.nativeBridge.nativeCall({
+      method: "showInitialView",
+      parameters: parameters,
+      successCallbacks: [callbacks.onSuccess],
+      failureCallbacks: [callbacks.onFailure]
+    });
+  };
+
+  return InitialView;
+
+})();
+;var Keyboard,
+  __hasProp = {}.hasOwnProperty,
+  __extends = function(child, parent) { for (var key in parent) { if (__hasProp.call(parent, key)) child[key] = parent[key]; } function ctor() { this.constructor = child; } ctor.prototype = parent.prototype; child.prototype = new ctor(); child.__super__ = parent.prototype; return child; };
+
+Keyboard = (function(_super) {
+  __extends(Keyboard, _super);
+
+  function Keyboard(options) {
+    if (options == null) {
+      options = {};
+    }
+    Keyboard.__super__.constructor.call(this, "keyboard_", ["actionButtonPressed"]);
+  }
+
+  return Keyboard;
+
+})(EventsSupport);
 ;var PostMessage;
 
 PostMessage = (function() {
@@ -3194,18 +3472,22 @@ PostMessage = (function() {
   };
 
   PostMessage.dispatchMessageEvent = function(escapedJSONMessage, targetOrigin) {
-    var e, message;
-    message = JSON.parse(unescape(escapedJSONMessage));
-    e = document.createEvent("MessageEvent");
-    e.initMessageEvent("message", false, false, message, "", "", window, null);
-    return window.dispatchEvent(e);
+    return setTimeout(function() {
+      var e, message;
+      message = JSON.parse(unescape(escapedJSONMessage));
+      e = document.createEvent("MessageEvent");
+      e.initMessageEvent("message", false, false, message, "", "", window, null);
+      return window.dispatchEvent(e);
+    }, 1);
   };
 
   return PostMessage;
 
 }).call(this);
-;window.steroids = {
-  version: "3.1.9",
+;var _this = this;
+
+window.steroids = {
+  version: "3.5.1",
   Animation: Animation,
   File: File,
   views: {
@@ -3257,7 +3539,7 @@ PostMessage = (function() {
     var _base;
     this.debug("on event " + event);
     if (this["" + event + "_has_fired"] != null) {
-      this.debug("on event " + event + ", alrueady fierd");
+      this.debug("on event " + event + ", already fired");
       return callback();
     } else {
       this.debug("on event " + event + ", waiting");
@@ -3307,6 +3589,8 @@ window.steroids.app = new App;
 
 Events.extend();
 
+window.steroids.initialView = new InitialView;
+
 window.steroids.drawers = new DrawerCollection;
 
 window.steroids.layers = new LayerCollection;
@@ -3343,8 +3627,25 @@ window.steroids.logger = new Logger;
 
 window.steroids.logger.queue.autoFlush(100);
 
+window.steroids.keyboard = new Keyboard;
+
 window.addEventListener("error", function(error, url, lineNumber) {
   return steroids.logger.log("" + error.message + " - " + url + ":" + lineNumber);
 });
+
+window.steroids.layers.on("didchange", function(event) {
+  var dumbElement;
+  dumbElement = document.createElement("IMG");
+  document.body.appendChild(dumbElement);
+  return setTimeout(function() {
+    if (dumbElement != null) {
+      return document.body.removeChild(dumbElement);
+    }
+  }, 1);
+});
+
+window.shouldRotateToOrientation = function(orientation) {
+  return false;
+};
 
 })(window);
