@@ -4,22 +4,28 @@
 steroids.config.name = "Steroids Repro Template"
 
 # -- Initial Location --
-steroids.config.location = "http://localhost/index.html"
+steroids.config.location = "http://localhost/tab1.html"
 
 # -- Tab Bar --
-# steroids.config.tabBar.enabled = true
-# steroids.config.tabBar.tabs = [
-#   {
-#     title: "Index"
-#     icon: "icons/pill@2x.png"
-#     location: "http://localhost/index.html"
-#   },
-#   {
-#     title: "Internet"
-#     icon: "icons/telescope@2x.png"
-#     location: "http://www.google.com"
-#   }
-# ]
+steroids.config.tabBar.enabled = true
+steroids.config.tabBar.tabs = [
+  {
+    title: "Index"
+    icon: "icons/pill@2x.png"
+    location: "http://localhost/tab1.html"
+  },
+  {
+    title: "Internet"
+    icon: "icons/telescope@2x.png"
+    location: "http://localhost/tab2.html"
+  }
+]
+
+steroids.config.drawers =
+  left:
+    id:"drawer"
+    location:"http://localhost/drawer.html"
+    showOnAppLoad:false
 
 # steroids.config.tabBar.tintColor = "#000000"
 # steroids.config.tabBar.tabTitleColor = "#00aeef"
