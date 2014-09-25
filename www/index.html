@@ -16,7 +16,7 @@
     margin: 1em;
   }
   body {
-    background-color: white; 
+    background-color: white;
   }
   </style>
 
@@ -24,8 +24,17 @@
 <body>
   <h2>Steroids Repro Template</h2>
 
+  <p>Tap push, then when transition animation is playing, tap push again.</p>
+  <p>Expected: second push fails.</p>
+  <p>Acual: two layers are pushed.</p>
+
+  <button onClick="pushLayer()">Push</button>
+
   <script>
-    //Add your JavaScripts here
+    function pushLayer() {
+      var indexView = new steroids.views.WebView("index.html")
+      steroids.layers.push(indexView)
+    }
   </script>
 </body>
 </html>
